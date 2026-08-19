@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>秋招情报站 · 央国企/互联网秋招岗位每日更新</title>
+  <meta name="description" content="秋招岗位信息聚合：国聘(央国企)、牛客网等来源每日自动更新，支持多维筛选、搜索、收藏与岗位对比。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%234f6ef7'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='sans-serif'>秋</text></svg>">
+  <link rel="stylesheet" href="assets/style.css?v=2">
+</head>
+<body>
+  <!-- 顶部 -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="logo">秋</div>
+        <div class="brand-text">
+          <h1>秋招情报站</h1>
+          <p class="subtitle">央国企 · 互联网大厂 · 校招信息每日自动更新</p>
+        </div>
+      </div>
+      <div class="header-stats" id="headerStats"></div>
+    </div>
+    <div class="update-banner" id="updateBanner"></div>
+  </header>
+
+  <!-- 标签页 -->
+  <nav class="tabs-wrap">
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-tab="all">全部岗位</button>
+      <button class="tab" data-tab="fav">我的收藏 <span class="badge" id="favCount">0</span></button>
+      <button class="tab" data-tab="stats">数据统计</button>
+    </div>
+  </nav>
+
+  <!-- 筛选区 -->
+  <section class="filters" id="filters">
+    <div class="search-row">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="none" stroke="currentColor" stroke-width="2" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="text" id="searchInput" placeholder="搜索职位、公司、关键词…" maxlength="60">
+        <button class="clear-btn" id="clearSearch" title="清空">✕</button>
+      </div>
+      <div class="quick-toggles">
+        <label class="toggle"><input type="checkbox" id="onlyNew"><span>今日新岗</span></label>
+        <label class="toggle"><input type="checkbox" id="onlyActive" checked><span>在招中</span></label>
+        <label class="toggle"><input type="checkbox" id="onlySoe"><span>央国企</span></label>
+      </div>
+    </div>
+    <div class="select-row" id="selectRow">
+      <select id="fCategory"><option value="">岗位大类</option></select>
+      <select id="fCity"><option value="">城市</option></select>
+      <select id="fEdu"><option value="">学历要求</option></select>
+      <select id="fCompany"><option value="">公司性质</option></select>
+      <select id="fType"><option value="">招聘类型</option></select>
+      <select id="fSalary"><option value="">薪资范围</option>
+        <option value="0-10">10K以下</option>
+        <option value="10-20">10-20K</option>
+        <option value="20-30">20-30K</option>
+        <option value="30-50">30-50K</option>
+        <option value="50-999">50K以上</option>
+      </select>
+      <select id="fSource"><option value="">数据来源</option></select>
+      <select id="fSort">
+        <option value="default">默认排序</option>
+        <option value="salary">薪资最高</option>
+        <option value="new">最新发布</option>
+        <option value="deadline">即将截止</option>
+      </select>
+      <button class="reset-btn" id="resetFilters">重置</button>
+    </div>
+  </section>
+
+  <!-- 主体 -->
+  <main class="main">
+    <!-- 列表 -->
+    <section id="listView">
+      <div class="results-bar">
+        <span id="resultCount">加载中…</span>
+        <span class="results-tip" id="favModeTip" hidden>当前展示收藏的岗位，筛选条件已忽略</span>
+      </div>
+      <div class="job-list" id="jobList"></div>
+      <div class="empty" id="emptyBox" hidden>
+        <div class="empty-icon">🔍</div>
+        <p>没有找到符合条件的岗位</p>
+        <button class="reset-btn" onclick="APP.resetAll()">重置筛选条件</button>
+      </div>
+      <div class="load-more-wrap">
+        <button id="loadMore" class="load-more" hidden>加载更多</button>
+      </div>
+    </section>
+
+    <!-- 统计 -->
+    <section id="statsView" hidden>
+      <div class="stats-grid">
+        <div class="stat-card wide">
+          <h3>每日更新趋势</h3>
+          <div id="chartTrend" class="chart-trend"></div>
+        </div>
+        <div class="stat-card">
+          <h3>岗位大类分布</h3>
+          <div id="chartCategory" class="bars"></div>
+        </div>
+        <div class="stat-card">
+          <h3>热门城市 TOP10</h3>
+          <div id="chartCity" class="bars"></div>
+        </div>
+        <div class="stat-card">
+          <h3>公司性质分布</h3>
+          <div id="chartCompany" class="bars"></div>
+        </div>
+        <div class="stat-card">
+          <h3>数据来源分布</h3>
+          <div id="chartSource" class="bars"></div>
+        </div>
+        <div class="stat-card">
+          <h3>招聘类型分布</h3>
+          <div id="chartType" class="bars"></div>
+        </div>
+        <div class="stat-card wide">
+          <h3>各数据源运行状态</h3>
+          <div id="sourceStatus" class="source-status"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 对比浮动栏 -->
+  <div class="compare-bar" id="compareBar" hidden>
+    <div class="compare-bar-inner">
+      <div class="compare-items" id="compareItems"></div>
+      <div class="compare-actions">
+        <button class="btn-primary" id="doCompare">开始对比</button>
+        <button class="btn-ghost" id="clearCompare">清空</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 岗位详情弹窗 -->
+  <div class="modal" id="detailModal" hidden>
+    <div class="modal-mask" data-close="detailModal"></div>
+    <div class="modal-body modal-detail">
+      <button class="modal-close" data-close="detailModal">✕</button>
+      <div id="detailContent"></div>
+    </div>
+  </div>
+
+  <!-- 对比弹窗 -->
+  <div class="modal" id="compareModal" hidden>
+    <div class="modal-mask" data-close="compareModal"></div>
+    <div class="modal-body modal-compare">
+      <button class="modal-close" data-close="compareModal">✕</button>
+      <h2>岗位对比</h2>
+      <div class="compare-scroll"><table class="compare-table" id="compareTable"></table></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>数据来源：<a href="https://www.iguopin.com" target="_blank" rel="noopener">国聘</a> · <a href="https://www.nowcoder.com" target="_blank" rel="noopener">牛客网</a> · <a href="https://www.zhipin.com" target="_blank" rel="noopener">BOSS直聘</a> ｜ 每日自动更新，岗位以原始链接页面为准</p>
+    <p class="footer-sub">本站仅做信息聚合展示，投递请前往原平台 · Data © 各来源平台</p>
+  </footer>
+
+  <script src="assets/app.js?v=3"></script>
+</body>
+</html>
