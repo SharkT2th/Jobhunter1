@@ -1,0 +1,53 @@
+name: 每日秋招数据采集
+
+on:
+  schedule:
+    # UTC 00:00 / 06:00 = 北京时间 08:00 / 14:00，每日两次
+    - cron: '0 0 * * *'
+    - cron: '0 6 * * *'
+  workflow_dispatch: {}   # 支持在 Actions 页面手动触发
+
+permissions:
+  contents: write   # 提交数据更新
+  issues: write     # 采集异常时自动创建 Issue 告警
+
+concurrency:
+  group: scrape
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 配置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 运行爬虫（采集/清洗/合并/告警）
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ZHIPIN_COOKIE: ${{ secrets.ZHIPIN_COOKIE }}   # 可选：BOSS直聘 Cookie
+        run: python scraper/main.py
+
+      - name: 提交数据更新
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data
+          if git diff --cached --quiet; then
+            echo "今日数据无变化，跳过提交"
+          else
+            git commit -m "chore(data): 自动更新秋招岗位数据 $(date -u +%F' '%T' UTC')"
+            git push
+          fi
+
+      - name: 汇总
+        if: always()
+        run: |
+          echo "=== 任务结束 ==="
+          echo "数据文件：" && ls -lh docs/data/ || true
